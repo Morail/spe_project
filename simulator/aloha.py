@@ -4,15 +4,17 @@ import numpy as np
 
 import config
 import utils
+import rng
+import stats
 
 
-def sim_aloha(num_nodes, num_epochs, packet_probs, transmission_times, packet_sizes, max_backoff_time, logger):
+def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
     total_transmissions = 0
 
     channel = Channel()
-    stations = utils.init_stations(num_nodes, packet_probs, packet_sizes, max_backoff_time)
+    stations = utils.init_stations(num_nodes, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
 
-    for slot in range(num_epochs):
+    for slot in range(cfg.num_epochs):
 
         # Only for debug purposes
         if (slot + 1) % 1000 == 0:
@@ -61,15 +63,15 @@ def sim_aloha(num_nodes, num_epochs, packet_probs, transmission_times, packet_si
             w.decrease_waiting_time()
 
     waiting_time = np.mean(sum([s.waiting_time for s in stations]))
-    throughput = channel.transmission_size / num_epochs
+    throughput = channel.transmission_size / cfg.num_epochs
     collision_rate = (total_transmissions - channel.packets_delivered) / total_transmissions
     lost_packets = np.mean(sum([s.lost_packets for s in stations]))
 
     return throughput, collision_rate, channel.packets, total_transmissions, waiting_time, lost_packets
 
 
-def run_simulations(num_runs, num_nodes, num_epochs, max_backoff_time, logger):
-    logger.info("[ALOHA] :: Running %d simulations with %d stations" % (num_runs, num_nodes))
+def run_simulations(num_stations, cfg, rng_, logger):
+    logger.info("[ALOHA] :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
     throughputs = []
     collision_rates = []
@@ -77,18 +79,20 @@ def run_simulations(num_runs, num_nodes, num_epochs, max_backoff_time, logger):
     lost_packets = []
     tx_packets = []
 
-    for _ in range(num_runs):
+    for _ in range(cfg.num_runs):
 
         if (_ + 1) % 100 == 0:
             logger.debug("[ALOHA] :: Run number %d" % (_ + 1))
 
-        packet_probs = [random.uniform(0.05, 0.2) for _ in range(num_nodes)]
-        transmission_times = [random.randint(1, 3) for _ in range(num_nodes)]
-        packet_sizes = [random.randint(50, 1500) for _ in range(num_nodes)]
+        # Generate rvs for each station in the simulated model for the three different categories
+        # TODO: define upper and lower interval bound using the config file
+        packet_probs = [rng_.generate_random_uniform(0.05, 0.4) for _ in range(num_stations)]
+        transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
+        packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
-        tput, c_rate, tx_pack, _, w_time, l_packs = sim_aloha(num_nodes, num_epochs, packet_probs,
+        tput, c_rate, tx_pack, _, w_time, l_packs = sim_aloha(num_stations, cfg, packet_probs,
                                                               transmission_times,
-                                                              packet_sizes, max_backoff_time, logger)
+                                                              packet_sizes, rng_, logger)
         throughputs.append(tput)
         collision_rates.append(c_rate)
         waiting_times.append(w_time)
@@ -116,20 +120,20 @@ def main():
     # Retrieve the configuration parameters for this simulation
     cfg = config.Config('./config.ini')
 
-    # Set seed
-    random.seed(cfg.seed)
+    # Init Random Number Generator
+    rng_ = rng.RandomNumberGenerator(cfg.seed)
 
     # Create logger
     log_ = utils.init_logger(is_debug=cfg.is_debug)
 
     # Stats for the different simulations' config
-    stats_ = {ns: {'aloha': {}, 'csma': {}} for ns in cfg.num_stations}
+    stats_ = {ns: {'aloha': {}, 'csma': {}} for ns in cfg.list_num_stations}
 
-    for ns in cfg.num_stations:
+    for ns in cfg.list_num_stations:
 
         # Run simulation with the given parameter and the "ns" number of stations
         # The number of station is the only variable in the simulation
-        stats_[ns]['aloha'] = run_simulations(cfg.num_runs, ns, cfg.num_epochs, cfg.max_backoff_time, log_)
+        stats_[ns]['aloha'] = run_simulations(ns, cfg, rng_, log_)
 
         # Debug purposes only
         log_.debug(stats_[ns]['aloha'])
@@ -141,7 +145,7 @@ def main():
         log_.info("[ALOHA] :: Average Lost packets: %s" % (stats_[ns]['aloha'].get('avg_lost_packets')))
 
     # Plot results
-    utils.plot_stats(stats_, cfg.num_stations)
+    utils.plot_stats(stats_, cfg.list_num_stations)
 
 
 if __name__ == "__main__":

@@ -9,11 +9,12 @@ class Station:
     WAIT = 3  # waiting backoff time before retransmitting
 
     # Initialize the stations.
-    def __init__(self, id_, packet_prob, packet_size, max_backoff_time=64):
+    def __init__(self, id_, packet_prob, packet_size, rng_, max_backoff_time=64):
         self.id = id_
         self.packet_prob = packet_prob
         self.packet_size = packet_size
         self.max_backoff_time = max_backoff_time
+        self.rng = rng_
 
         # Statistics
         self.total_packets = 0
@@ -55,7 +56,7 @@ class Station:
         # Random exponential backoff time
         # A station choose, with equal probability, one of the next 2^n frames
         # for sending the packet again, where n is the number of attempt until now
-        self.backoff_time = random.randint(0, (2 ** self.packet_attempt) - 1)
+        self.backoff_time = self.rng.generate_random_int(0, (2 ** self.packet_attempt) - 1)
 
         # if backoff time is 0 the station enters the
         # RTX state (ready to re-transmit)
@@ -89,7 +90,7 @@ class Station:
         # If a station is IDLE then it has a frame to be transmitted with
         # probability equals to the one assigned to the node in the init phase
         # A node in the RXT state has to send data
-        return self.state == Station.RTX or (self.state == Station.IDLE and random.random() < self.packet_prob)
+        return self.state == Station.RTX or (self.state == Station.IDLE and self.rng.generate_random() < self.packet_prob)
 
     def __repr__(self):
         return "Node [%s]" % self.id

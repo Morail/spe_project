@@ -20,12 +20,12 @@ def init(fn_):
 
 
 # Init stations
-def init_stations(num_, packet_probs, packet_sizes, max_backoff_time):
+def init_stations(num_, packet_probs, packet_sizes, rng_, max_backoff_time):
     # Create a new Station by passing:
     # - param i to be used as unique identifier for the station
     # - the probability for the given Station to generate a packet to transmit for each frame
     # - the packet size
-    stations = [Station(i, packet_probs[i], packet_sizes[i], max_backoff_time) for i in range(num_)]
+    stations = [Station(i, packet_probs[i], packet_sizes[i], rng_, max_backoff_time) for i in range(num_)]
 
     return stations
 
