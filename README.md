@@ -1,2 +1,2 @@
-# Simulation and Performance Evaluation project aa 2023/2024
+# Simulation and Performance Evaluation project
 # Marco Frassoni matr. 194513
