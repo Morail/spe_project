@@ -1,4 +1,3 @@
-import random
 from channel import Channel
 import numpy as np
 
@@ -33,13 +32,15 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
             # No nodes ready to start a trasmission
             continue
 
+        # Iterate over all the stations in TX=transmit state
         for txs in transmitting:
             txs.start_tx()
-            # Commence transmission
+            # Start transmission
             channel.transmit(txs.packet_size)
 
         # Only one node is trying to transmit on the channel
         if len(transmitting) == 1:
+            # There is only one station in the TX state
             s = transmitting[0]
             # Ack the sender
             s.get_ack()
@@ -53,6 +54,7 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
 
             # In case of collision sent packets are lost
             for txs in transmitting:
+                # Sending station has to handle with the collision
                 txs.handle_collision()
 
         # Decrease waiting time for stations in WAIT state, as a way to

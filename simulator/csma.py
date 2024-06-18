@@ -1,4 +1,3 @@
-from random import Random
 from channel import Channel
 import numpy as np
 

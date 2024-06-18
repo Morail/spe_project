@@ -1,5 +1,3 @@
-from random import Random
-
 import aloha
 import utils
 import csma
