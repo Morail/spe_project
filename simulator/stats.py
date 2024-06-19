@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import scipy.stats
 import seaborn as sns
 from matplotlib import pyplot as plt
 from scipy import stats as st
@@ -113,6 +114,12 @@ def compute_lorenz_curve_gap(data):
     return gap
 
 
+def rescale_data(data):
+    """Apply the Box-Cox transformation to given data. Data is best rescaled"""
+    t_data = scipy.stats.boxcox(data)
+
+    return t_data
+
 def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=False):
     # Throughput histogram
     title = '%s %s for %d stations' % (protocol.upper(), metric, num_stations)
@@ -176,12 +183,19 @@ def plot_catplot(data_, protocol, save_fig=False):
     g.despine(left=True)
 
 
-def plot_qqplot(data_, metric, title, fname=None, save_fig=False):
-    sns.set_theme()
+def plot_qqplot(data, title, fname=None, save_fig=False):
+    sns.set()
 
-    _ = sm.qqplot(data_[metric], line='45')
+    x = np.array(data)
 
-    plt.title(title)
+    # _ = sm.qqplot(x, line='45')
+
+    # make statsmodel probplot
+    # plot = sm.ProbPlot(x, dist=scipy.stats.geom, distargs=(1/3,))
+    plot = sm.ProbPlot(x, dist=scipy.stats.lognorm, fit=True)
+    plot.qqplot(line='45')
+
+    plt.title("%s against lognorm distribution" % title)
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')

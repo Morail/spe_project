@@ -100,7 +100,7 @@ def run_simulations(num_stations, cfg, logger):
 
         # Generate rvs for each station in the simulated model for the three different categories
         # TODO: define upper and lower interval bound using the config file
-        packet_probs = [rng_.generate_random_uniform(0.05, 0.2) for _ in range(num_stations)]
+        packet_probs = [rng_.generate_random_uniform(0.05, 0.4) for _ in range(num_stations)]
         transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
         packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
@@ -118,7 +118,7 @@ def run_simulations(num_stations, cfg, logger):
         "throughput": throughput
         #,"collision_rate": collision_rates
         ,"delay": waiting_times
-        ,"lost_packets": lost_packets
+        # ,"lost_packets": lost_packets
         #,"tx_packets": tx_packets
     }
 
