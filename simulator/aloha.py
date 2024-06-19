@@ -8,6 +8,7 @@ import rng
 
 def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
     total_transmissions = 0
+    collisions = 0
 
     channel = Channel()
     stations = utils.init_stations(num_nodes, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
@@ -55,6 +56,8 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
             for txs in transmitting:
                 # Sending station has to handle with the collision
                 txs.handle_collision()
+                # Increment the collisions' counter by the number of transmitting nodes
+                collisions += len(transmitting)
 
         # Decrease waiting time for stations in WAIT state, as a way to
         # simulate the increase in the time clock 
@@ -64,18 +67,19 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
             w.decrease_waiting_time()
 
     # Compute statistics
-    waiting_time = np.mean(sum([s.waiting_time for s in stations]))
+    waiting_time = sum([s.waiting_time for s in stations])
     throughput = channel.transmission_size / cfg.num_epochs
-    collision_rate = (total_transmissions - channel.packets_delivered) / total_transmissions
-    lost_packets = np.mean(sum([s.lost_packets for s in stations]))
+    collision_rate = collisions / total_transmissions
+    lost_packets = sum([s.lost_packets for s in stations])
 
-    return throughput, collision_rate, channel.packets, total_transmissions, waiting_time, lost_packets
+    return throughput, collision_rate, channel.packets, total_transmissions, waiting_time, lost_packets, collisions
 
 
 def run_simulations(num_stations, cfg, logger):
     logger.info("[ALOHA] :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
     throughput = []
+    collisions = []
     collision_rates = []
     waiting_times = []
     lost_packets = []
@@ -98,10 +102,11 @@ def run_simulations(num_stations, cfg, logger):
         transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
         packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
-        tput, c_rate, tx_pack, _, w_time, l_packs = sim_aloha(num_stations, cfg, packet_probs,
+        tput, c_rate, tx_pack, _, w_time, l_packs, coll = sim_aloha(num_stations, cfg, packet_probs,
                                                               transmission_times,
                                                               packet_sizes, rng_, logger)
         throughput.append(tput)
+        collisions.append(coll)
         collision_rates.append(c_rate)
         waiting_times.append(w_time)
         lost_packets.append(l_packs)

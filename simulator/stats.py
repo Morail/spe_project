@@ -7,7 +7,7 @@ from statsmodels import api as sm
 
 def compute_percentiles(data, percentiles):
     # Specify array of percentiles: percentiles
-    if not percentiles:
+    if percentiles is None or len(percentiles) == 0:
         # Default value
         percentiles = np.array([2.5, 25, 50, 75, 97.5])
     # Compute percentiles:
@@ -23,14 +23,8 @@ def compute_std(data):
 
 
 def manual_computation_std(data):
-    # Compute the mean
-    m = np.mean(data)
-    # Compute array with differences from data items and their mean
-    diff = data - m
-    # Square previously obtained array
-    diff_sqr = diff**2
-    # Compute the mean and obtain the variance
-    var = np.mean(diff_sqr)
+    # Obtain the variance
+    var = manual_computation_variance(data)
     # Std is the square root of the variance
     std = np.sqrt(var)
     return std
@@ -46,7 +40,7 @@ def manual_computation_variance(data):
     # Compute array with differences from data items and their mean
     diff = data - m
     # Square previously obtained array
-    diff_sqr = diff**2
+    diff_sqr = diff ** 2
     # Compute the mean and obtain the variance
     var = np.mean(diff_sqr)
     return var
@@ -57,7 +51,7 @@ def compute_median(data):
 
 
 def compute_confidence_interval(data, confidence=0.95):
-
+    """Compute given confidence interval."""
     mean = np.mean(data)
     sem = st.sem(data)
     interval = st.t.interval(confidence, len(data) - 1, loc=mean, scale=sem)
@@ -65,8 +59,45 @@ def compute_confidence_interval(data, confidence=0.95):
     return mean, interval
 
 
-def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=False):
+def compute_gini_coefficient(data):
+    """Compute Gini coefficient of array of values"""
+    data = np.double(data)
+    data = data / sum(data)
+    # Mean absolute difference
+    mad = np.abs(np.subtract.outer(data, data)).mean()
+    # Relative mean absolute difference
+    rmad = mad / np.mean(data)
+    # Gini coefficient
+    g = 0.5 * rmad
+    return g
 
+
+def compute_coefficient_of_variation(data):
+    cov = np.std(data) / np.mean(data)
+    return cov
+
+
+def compute_mad(data):
+    """Mean Absolute Deviation"""
+    m = compute_mean(data)
+    n = len(data)
+    mad = sum(abs(data - m)) / n
+
+    return mad
+
+
+def compute_lorenz_curve_gap(data):
+    """Lorenz Curve Gap is a rescaled version of MAD. Alternative to CoV,
+    it uses mean absolute deviation."""
+    m = compute_mean(data)
+    mad = compute_mad(data)
+
+    gap = mad / (2*m)
+
+    return gap
+
+
+def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=False):
     # Throughput histogram
     title = '%s %s for %d stations' % (protocol.upper(), metric, num_stations)
     # Seaborn
@@ -75,6 +106,35 @@ def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=Fals
     if save_fig:
         fn_ = './plots/%s_%s_%d_histogram.png' % (protocol, metric, num_stations)
         plt.savefig(fn_, bbox_inches='tight')
+
+    plt.show()
+
+
+def plot_lorenz_curve(data_, title, fname, save_fig=False):
+    """The curve is a graph showing the proportion of overall income or wealth
+    assumed by the bottom x % of the people"""
+    sns.set()
+
+    m = compute_mean(data_)
+    sdata = np.sort(data_)
+    n = len(data_)
+
+    z = n * m
+
+    lorenz_curve = np.sort([(sum(sdata[:i + 1]) / n * m) for i, d in enumerate(sdata)])
+    # lorenz_curve = sdata.cumsum() / z
+
+    fig, ax = plt.subplots(figsize=[6, 6])
+    ## scatter plot of Lorenz curve
+    ax.scatter(np.arange(lorenz_curve.size) / (lorenz_curve.size - 1), lorenz_curve,
+               marker='x', color='darkgreen', s=100)
+    ## line plot of equality
+    ax.plot([0, 1], [0, 1], color='k')
+
+    plt.title(title)
+
+    if save_fig:
+        plt.savefig(fname, bbox_inches='tight')
 
     plt.show()
 
@@ -90,12 +150,7 @@ def plot_scatterplot(data_, x, y, save_fig=False):
 
 
 def plot_catplot(data_, protocol, save_fig=False):
-
-    sns.set_theme(style="whitegrid")
-
-    # Load the example exercise dataset
-    exercise = sns.load_dataset("exercise")
-
+    sns.set()
     # Draw a pointplot to show pulse as a function of three categorical factors
     g = sns.catplot(
         data=data_, x="time", y="pulse", hue="protocol", col="diet",
@@ -146,6 +201,6 @@ def ecdf(data):
     x = np.sort(data)
 
     # y-data for the ECDF: y
-    y = np.arange(1, n+1) / n
+    y = np.arange(1, n + 1) / n
 
     return x, y

@@ -11,6 +11,7 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
     total_transmissions = 0
     total_data_transmitted = 0
     channel_time_remaining = 0
+    collisions = 0
 
     c = Channel()
     stations = utils.init_stations(num_nodes, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
@@ -77,7 +78,7 @@ def run_simulations(num_stations, cfg, logger):
         transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
         packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
-        tput, c_rate, _, _, w_time = sim_csma(num_stations, cfg, packet_probs, transmission_times,
+        tput, c_rate, _, _, w_time, coll = sim_csma(num_stations, cfg, packet_probs, transmission_times,
                                               packet_sizes, rng_, logger)
 
         throughputs.append(tput)
