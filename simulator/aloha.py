@@ -72,8 +72,11 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
     return throughput, collision_rate, channel.packets, total_transmissions, waiting_time, lost_packets
 
 
-def run_simulations(num_stations, cfg, rng_, logger):
+def run_simulations(num_stations, cfg, logger):
     logger.info("[ALOHA] :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
+
+    # Init Random Number Generator
+    rng_ = rng.RandomNumberGenerator(cfg.seed)
 
     throughputs = []
     collision_rates = []
@@ -122,9 +125,6 @@ def main():
     # Retrieve the configuration parameters for this simulation
     cfg = config.Config('./config.ini')
 
-    # Init Random Number Generator
-    rng_ = rng.RandomNumberGenerator(cfg.seed)
-
     # Create logger
     log_ = utils.init_logger(is_debug=cfg.is_debug)
 
@@ -135,7 +135,7 @@ def main():
 
         # Run simulation with the given parameter and the "ns" number of stations
         # The number of station is the only variable in the simulation
-        stats_[ns]['aloha'] = run_simulations(ns, cfg, rng_, log_)
+        stats_[ns]['aloha'] = run_simulations(ns, cfg, log_)
 
         # Debug purposes only
         log_.debug(stats_[ns]['aloha'])

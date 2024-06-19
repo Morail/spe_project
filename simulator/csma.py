@@ -52,8 +52,11 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
     return throughput, collision_rate, successful_transmissions, total_transmissions, waiting_time
 
 
-def run_simulations(num_stations, cfg, rng_, logger):
+def run_simulations(num_stations, cfg, logger):
     logger.info("[CSMA]  :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
+
+    # Init Random Number Generator
+    rng_ = rng.RandomNumberGenerator(cfg.seed)
 
     throughputs = []
     collision_rates = []
@@ -95,17 +98,14 @@ def main():
     # Retrieve the configuration parameters for this simulation
     cfg = config.Config('./config.ini')
 
-    # Init Random Number Generator
-    rng_ = rng.RandomNumberGenerator(cfg.seed)
-
     # Create logger
-    log_ = utils.init_logger(is_debug=False)
+    log_ = utils.init_logger(is_debug=cfg.is_debug)
 
     # Stats for the different simulations' config
     stats_ = {ns: {'aloha': {}, 'csma': {}} for ns in cfg.list_num_stations}
 
     for ns in cfg.list_num_stations:
-        stats_[ns]['csma'] = run_simulations(cfg.num_runs, ns, cfg.num_epochs, cfg.max_backoff_time, rng_, log_)
+        stats_[ns]['csma'] = run_simulations(cfg.num_runs, ns, cfg.num_epochs, cfg.max_backoff_time, log_)
 
         log_.debug(stats_[ns]['csma'])
 
