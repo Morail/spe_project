@@ -75,9 +75,6 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
 def run_simulations(num_stations, cfg, logger):
     logger.info("[ALOHA] :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
-    # Init Random Number Generator
-    rng_ = rng.RandomNumberGenerator(cfg.seed)
-
     throughputs = []
     collision_rates = []
     waiting_times = []
@@ -85,6 +82,12 @@ def run_simulations(num_stations, cfg, logger):
     tx_packets = []
 
     for _ in range(cfg.num_runs):
+
+        # Init Random Number Generator
+        # Independent replications: re-initialize each replication with a different RNG seed
+        rng_ = rng.RandomNumberGenerator()
+        # Alternative: initialize with fixed seed in order to ensure reproducibility of the simulation
+        # rng_ = rng.RandomNumberGenerator(cfg.seed)
 
         if (_ + 1) % 100 == 0:
             logger.debug("[ALOHA] :: Run number %d" % (_ + 1))

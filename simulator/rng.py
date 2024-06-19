@@ -1,4 +1,5 @@
 import random
+import sys
 
 
 class RandomNumberGenerator:
@@ -8,7 +9,9 @@ class RandomNumberGenerator:
     is to use the same seed for all the draws.
     """
 
-    def __init__(self, seed):
+    def __init__(self, seed=None):
+        if seed is None:
+            seed = random.SystemRandom().randint(0, sys.maxsize)
         random.seed(seed)
 
     def generate_random(self):

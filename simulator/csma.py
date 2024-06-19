@@ -55,15 +55,18 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
 def run_simulations(num_stations, cfg, logger):
     logger.info("[CSMA]  :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
-    # Init Random Number Generator
-    rng_ = rng.RandomNumberGenerator(cfg.seed)
-
     throughputs = []
     collision_rates = []
     waiting_times = []
     utilizations = []
 
     for _ in range(cfg.num_runs):
+
+        # Init Random Number Generator
+        # Independent replications: re-initialize each replication with a different RNG seed
+        rng_ = rng.RandomNumberGenerator()
+        # Alternative: initialize with fixed seed in order to ensure reproducibility of the simulation
+        # rng_ = rng.RandomNumberGenerator(cfg.seed)
 
         # Only for debug purposes
         if (_ + 1) % 100 == 0:
