@@ -89,9 +89,11 @@ def run_simulations(num_stations, cfg, logger):
 
         # Init Random Number Generator
         # Independent replications: re-initialize each replication with a different RNG seed
-        rng_ = rng.RandomNumberGenerator()
         # Alternative: initialize with fixed seed in order to ensure reproducibility of the simulation
-        # rng_ = rng.RandomNumberGenerator(cfg.seed)
+        if not cfg.seed or cfg.seed is None or cfg.seed == 'None' or cfg.seed == '':
+            rng_ = rng.RandomNumberGenerator()
+        else:
+            rng_ = rng.RandomNumberGenerator(cfg.seed)
 
         if (_ + 1) % 100 == 0:
             logger.debug("[ALOHA] :: Run number %d" % (_ + 1))

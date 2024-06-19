@@ -19,7 +19,7 @@ class Config:
         self.num_runs = int(config[section]['NumRuns'])
         self.num_epochs = int(config[section]['NumEpochs'])
         self.max_backoff_time = int(config[section]['MaxBackoffTime'])
-        self.list_num_stations = [int(ns) for ns in config[section]['NumStations'].split(',')]
-        self.seed = config.get(section, 'Seed')
+        self.list_num_stations = [int(ns) for ns in config[section]['NumStations'].strip().split(',')]
+        self.seed = config.get(section, 'Seed').strip()
         self.is_debug = config.getboolean(section,'IsDebug')
 
