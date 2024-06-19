@@ -122,7 +122,7 @@ def rescale_data(data):
 
 def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=False):
     # Throughput histogram
-    title = '%s %s for %d stations' % (protocol.upper(), metric, num_stations)
+    title = '%s %s %d stations' % (protocol.upper(), metric, num_stations)
     # Seaborn
     sns.histplot(data=data_, x=metric, bins=bins, kde=True).set_title(title)
 
@@ -188,14 +188,30 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
 
     x = np.array(data)
 
+    # MLE to find parameter p for geometric distribution
+    # dist = scipy.stats.geom
+    # res = scipy.stats.fit(dist, data)
+    # print(res)
+
+    fig = plt.figure()
+    props = dict(boxstyle='round', alpha=0.5, fill=True, color="blue")
+    ax1 = fig.add_subplot(211)
+    ax1.set_xlabel('')
+    ax1.set_title('Probplot against normal distribution')
+    ax1.text(0.05, 0.90, "Data vs geometric", transform=ax1.transAxes, fontsize=14,
+         verticalalignment='top', bbox=props)
+    _ = scipy.stats.probplot(x, dist=scipy.stats.geom, sparams=(0.0168), plot=ax1, fit=True)
+    ax2 = fig.add_subplot(212)
+    ax2.set_title('Probplot after Box-Cox transformation')
+    xt, _ = rescale_data(data)
+    _ = scipy.stats.probplot(xt, dist=scipy.stats.norm, plot=ax2, fit=True)
+    ax2.text(0.05, 0.85, "Rescaled Data vs norm", transform=ax2.transAxes, fontsize=14,
+         verticalalignment='top', bbox=props)
+
     # _ = sm.qqplot(x, line='45')
-
-    # make statsmodel probplot
     # plot = sm.ProbPlot(x, dist=scipy.stats.geom, distargs=(1/3,))
-    plot = sm.ProbPlot(x, dist=scipy.stats.lognorm, fit=True)
-    plot.qqplot(line='45')
-
-    plt.title("%s against lognorm distribution" % title)
+    # plot = sm.ProbPlot(x, dist=scipy.stats.lognorm, fit=True)
+    # plot.qqplot(line='45')
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')

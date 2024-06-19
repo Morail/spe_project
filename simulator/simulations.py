@@ -88,12 +88,12 @@ def start_simulations(protocols):
                 stats.plot_histogram(data_, metric, protocol, num_stations, n_bins, save_fig)
 
                 # ECDF
-                title = '%s %s ECDF for %d stations' % (protocol.upper(), metric, num_stations)
+                title = '%s %s %d stations' % (protocol.upper(), metric, num_stations)
                 fn_ = './plots/%s_%s_%d_ecdf.png' % (protocol, metric, num_stations)
                 stats.plot_ecdf(data_, metric, title=title, fname=fn_, save_fig=save_fig)
 
                 # qqplot
-                title = '%s %s qqplot for %d stations' % (protocol.upper(), metric, num_stations)
+                title = '%s %s %d stations' % (protocol.upper(), metric, num_stations)
                 fn_ = './plots/%s_%s_%d_qqplot.png' % (protocol, metric, num_stations)
                 stats.plot_qqplot(df, title=title, fname=fn_, save_fig=save_fig)
 
