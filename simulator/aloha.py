@@ -1,13 +1,9 @@
-import spe_project.simulator.stats
-import spe_project.simulator.utils
 from channel import Channel
 import numpy as np
 
 import simulations
-import config
 import utils
 import rng
-import stats
 
 
 def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
@@ -67,6 +63,7 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
         for w in waiting:
             w.decrease_waiting_time()
 
+    # Compute statistics
     waiting_time = np.mean(sum([s.waiting_time for s in stations]))
     throughput = channel.transmission_size / cfg.num_epochs
     collision_rate = (total_transmissions - channel.packets_delivered) / total_transmissions
@@ -78,7 +75,7 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
 def run_simulations(num_stations, cfg, logger):
     logger.info("[ALOHA] :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
-    throughputs = []
+    throughput = []
     collision_rates = []
     waiting_times = []
     lost_packets = []
@@ -104,14 +101,14 @@ def run_simulations(num_stations, cfg, logger):
         tput, c_rate, tx_pack, _, w_time, l_packs = sim_aloha(num_stations, cfg, packet_probs,
                                                               transmission_times,
                                                               packet_sizes, rng_, logger)
-        throughputs.append(tput)
+        throughput.append(tput)
         collision_rates.append(c_rate)
         waiting_times.append(w_time)
         lost_packets.append(l_packs)
         tx_packets.append(tx_pack)
 
     return {
-        "throughput": throughputs,
+        "throughput": throughput,
         "collision_rate": collision_rates,
         "delay": waiting_times,
         "lost_packets": lost_packets,
