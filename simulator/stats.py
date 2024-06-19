@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
@@ -55,6 +57,20 @@ def compute_confidence_interval(data, confidence=0.95):
     mean = np.mean(data)
     sem = st.sem(data)
     interval = st.t.interval(confidence, len(data) - 1, loc=mean, scale=sem)
+
+    return mean, interval
+
+
+def compute_cis_95(data):
+    """The following holds for larger sample set ( > 71)"""
+    n = len(data)
+    sdata = np.sort(data)
+
+    lower = math.floor((0.50*n) - (0.980*math.sqrt(n)))
+    upper = math.ceil((0.50*n) +1 + (0.980*math.sqrt(n)))
+
+    interval = [sdata[lower], sdata[upper]]
+    mean = compute_mean(data)
 
     return mean, interval
 
