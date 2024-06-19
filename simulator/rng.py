@@ -2,6 +2,7 @@ import random
 import sys
 
 
+# TODO: change it to Singleton pattern
 class RandomNumberGenerator:
     """
     This class mocks a Random Number Generator by importing the default python random modules.

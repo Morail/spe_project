@@ -1,6 +1,10 @@
 import numpy as np
 from scipy import stats as st
+import pandas as pd
 
+
+def load_df(stats):
+    return pd.DataFrame(stats)
 
 def compute_confidence_interval(data, confidence=0.95):
     mean = np.mean(data)
