@@ -84,6 +84,7 @@ def start_simulations(protocols):
                 stats.plot_ecdf(data_, metric, title=title, fname=fn_, save_fig=save_fig)
 
                 # qqplot
+                # TODO: rescale the data
                 title = '%s %s qqplot for %d stations' % (protocol.upper(), metric, num_stations)
                 fn_ = './plots/%s_%s_%d_qqplot.png' % (protocol, metric, num_stations)
                 stats.plot_qqplot(data_, metric, title=title, fname=fn_, save_fig=save_fig)
