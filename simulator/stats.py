@@ -61,7 +61,7 @@ def compute_confidence_interval(data, confidence=0.95):
     return mean, interval
 
 
-def compute_cis_95(data):
+def compute_ci_median(data):
     """The following holds for larger sample set ( > 71)"""
     n = len(data)
     sdata = np.sort(data)

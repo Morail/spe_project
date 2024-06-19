@@ -55,7 +55,7 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
 def run_simulations(num_stations, cfg, logger):
     logger.info("[CSMA]  :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
-    throughputs = []
+    throughput = []
     collision_rates = []
     waiting_times = []
     utilizations = []
@@ -81,16 +81,16 @@ def run_simulations(num_stations, cfg, logger):
         tput, c_rate, _, _, w_time, coll = sim_csma(num_stations, cfg, packet_probs, transmission_times,
                                               packet_sizes, rng_, logger)
 
-        throughputs.append(tput)
+        throughput.append(tput)
         collision_rates.append(c_rate)
         waiting_times.append(w_time)
 
     return {
-        "throughput": throughputs,
-        "collision_rate": collision_rates,
-        "delay": waiting_times,
-        "lost_packets": None,
-        "tx_packets": None
+        "throughput": throughput
+        # ,"collision_rate": collision_rates
+        , "delay": waiting_times
+        , "lost_packets": None
+        # ,"tx_packets": None
     }
 
 

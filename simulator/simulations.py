@@ -50,7 +50,7 @@ def start_simulations(protocols):
                 variance = stats.compute_variance(df)
                 std = stats.compute_std(df)
                 ci = stats.compute_confidence_interval(df)
-                ci95 = stats.compute_cis_95(df)
+                ci95 = stats.compute_ci_median(df)
                 gini = stats.compute_gini_coefficient(df)
                 cov = stats.compute_coefficient_of_variation(df)
                 mad = stats.compute_mad(df)

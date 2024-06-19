@@ -113,11 +113,11 @@ def run_simulations(num_stations, cfg, logger):
         tx_packets.append(tx_pack)
 
     return {
-        "throughput": throughput,
-        "collision_rate": collision_rates,
-        "delay": waiting_times,
-        "lost_packets": lost_packets,
-        "tx_packets": tx_packets
+        "throughput": throughput
+        #,"collision_rate": collision_rates
+        ,"delay": waiting_times
+        ,"lost_packets": lost_packets
+        #,"tx_packets": tx_packets
     }
 
 
