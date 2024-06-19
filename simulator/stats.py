@@ -5,9 +5,11 @@ from scipy import stats as st
 from statsmodels import api as sm
 
 
-def compute_percentiles(data):
+def compute_percentiles(data, percentiles):
     # Specify array of percentiles: percentiles
-    percentiles = np.array([2.5, 25, 50, 75, 97.5])
+    if not percentiles:
+        # Default value
+        percentiles = np.array([2.5, 25, 50, 75, 97.5])
     # Compute percentiles:
     return np.percentile(data, percentiles)
 
@@ -20,8 +22,34 @@ def compute_std(data):
     return np.std(data)
 
 
+def manual_computation_std(data):
+    # Compute the mean
+    m = np.mean(data)
+    # Compute array with differences from data items and their mean
+    diff = data - m
+    # Square previously obtained array
+    diff_sqr = diff**2
+    # Compute the mean and obtain the variance
+    var = np.mean(diff_sqr)
+    # Std is the square root of the variance
+    std = np.sqrt(var)
+    return std
+
+
 def compute_variance(data):
     return np.var(data)
+
+
+def manual_computation_variance(data):
+    # Compute the mean
+    m = np.mean(data)
+    # Compute array with differences from data items and their mean
+    diff = data - m
+    # Square previously obtained array
+    diff_sqr = diff**2
+    # Compute the mean and obtain the variance
+    var = np.mean(diff_sqr)
+    return var
 
 
 def compute_median(data):
@@ -29,9 +57,11 @@ def compute_median(data):
 
 
 def compute_confidence_interval(data, confidence=0.95):
+
     mean = np.mean(data)
     sem = st.sem(data)
     interval = st.t.interval(confidence, len(data) - 1, loc=mean, scale=sem)
+
     return mean, interval
 
 
@@ -42,12 +72,6 @@ def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=Fals
     # Seaborn
     sns.histplot(data=data_, x=metric, bins=bins, kde=True).set_title(title)
 
-    # Matplotlib
-    #_ = plt.hist(data_, bins=bins)
-    #_ = plt.xlabel(xlabel)
-    #_ = plt.ylabel(ylabel)
-    #_ = plt.title(title)
-
     if save_fig:
         fn_ = './plots/%s_%s_%d_histogram.png' % (protocol, metric, num_stations)
         plt.savefig(fn_, bbox_inches='tight')
@@ -55,7 +79,7 @@ def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=Fals
     plt.show()
 
 
-def plot_scatterplot(data_, x, y):
+def plot_scatterplot(data_, x, y, save_fig=False):
     sns.set_theme(style="white", color_codes=True)
 
     # Use JointGrid directly to draw a custom plot
@@ -65,7 +89,7 @@ def plot_scatterplot(data_, x, y):
     g.plot_marginals(sns.rugplot, height=1, color="g", alpha=.6)
 
 
-def plot_catplot(data_, protocol):
+def plot_catplot(data_, protocol, save_fig=False):
 
     sns.set_theme(style="whitegrid")
 
@@ -81,20 +105,20 @@ def plot_catplot(data_, protocol):
     g.despine(left=True)
 
 
-def plot_qqplot(data_, metric, title, fname=None):
+def plot_qqplot(data_, metric, title, fname=None, save_fig=False):
     sns.set_theme()
 
     _ = sm.qqplot(data_[metric], line='45')
 
     plt.title(title)
 
-    if fname is not None:
+    if save_fig:
         plt.savefig(fname, bbox_inches='tight')
 
     plt.show()
 
 
-def plot_ecdf(data_, metric, title='ECDF', fname=None):
+def plot_ecdf(data_, metric, title='ECDF', fname=None, save_fig=False):
     sns.set_theme()
 
     x, y = ecdf(data_[metric])
@@ -107,7 +131,7 @@ def plot_ecdf(data_, metric, title='ECDF', fname=None):
     # Keeps data off plot edges by adding a 2% buffer all around the plot
     plt.margins(0.02)
 
-    if fname is not None:
+    if save_fig:
         plt.savefig(fname, bbox_inches='tight')
 
     plt.show()
