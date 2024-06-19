@@ -2,9 +2,8 @@ from channel import Channel
 import numpy as np
 
 import utils
-import config
+import simulations
 import rng
-import stats
 
 
 def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
@@ -74,51 +73,30 @@ def run_simulations(num_stations, cfg, logger):
 
         # Generate rvs for each station in the simulated model for the three different categories
         # TODO: define upper and lower interval bound using the config file
-        packet_probs = [rng_.generate_random_uniform(0.05, 0.4) for _ in range(num_stations)]
+        packet_probs = [rng_.generate_random_uniform(0.05, 0.2) for _ in range(num_stations)]
         transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
         packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
         tput, c_rate, _, _, w_time = sim_csma(num_stations, cfg, packet_probs, transmission_times,
-                                              packet_sizes, logger)
+                                              packet_sizes, rng_, logger)
+
         throughputs.append(tput)
         collision_rates.append(c_rate)
         waiting_times.append(w_time)
 
     return {
-        "average_throughput": np.mean(throughputs),
-        "average_collision_rate": np.mean(collision_rates),
         "throughput": throughputs,
         "collision_rate": collision_rates,
         "delay": waiting_times,
-        "average_delay": np.mean(waiting_times),
-        "average_utilization": None,
-        "average_retransmissions": None
+        "lost_packets": None,
+        "tx_packets": None
     }
 
 
 def main():
 
-    # Retrieve the configuration parameters for this simulation
-    cfg = config.Config('./config.ini')
-
-    # Create logger
-    log_ = utils.init_logger(is_debug=cfg.is_debug)
-
-    # Stats for the different simulations' config
-    stats_ = {ns: {'aloha': {}, 'csma': {}} for ns in cfg.list_num_stations}
-
-    for ns in cfg.list_num_stations:
-        stats_[ns]['csma'] = run_simulations(cfg.num_runs, ns, cfg.num_epochs, cfg.max_backoff_time, log_)
-
-        log_.debug(stats_[ns]['csma'])
-
-        # Print out some stats
-        log_.info("[CSMA] :: Average Throughput: %s" % (stats_[ns]['csma'].get('avg_throughput')))
-        log_.info("[CSMA] :: Average Collision Rate: %s" % (stats_[ns]['csma'].get('avg_collision_rate')))
-        log_.info("[CSMA] :: Average Waiting Time: %s" % (stats_[ns]['csma'].get('average_waiting_times')))
-
-    # Plot results
-    utils.plot_stats(stats_, cfg.list_num_stations)
+    # Run simulations from the method defined in simulation.py
+    simulations.start_simulations(['csma'])
 
 
 if __name__ == "__main__":

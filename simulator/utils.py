@@ -1,8 +1,8 @@
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from tabulate import tabulate
-import seaborn as sns
 
 from station import Station
 
@@ -48,73 +48,6 @@ def print_tables(stats_, metric):
     return tabulate(data_, headers=headers_)
 
 
-def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=False):
-
-    # Throughput histogram
-    title = '%s %s for %d stations' % (protocol.upper(), metric, num_stations)
-    # Seaborn
-    sns.histplot(data=data_, x=metric, bins=bins, kde=False).set_title(title)
-
-    # Matplotlib
-    #_ = plt.hist(data_, bins=bins)
-    #_ = plt.xlabel(xlabel)
-    #_ = plt.ylabel(ylabel)
-    #_ = plt.title(title)
-
-    if save_fig:
-        fn_ = './plots/%s_%s_%d_histogram.png' % (protocol, metric, num_stations)
-        plt.savefig(fn_, bbox_inches='tight')
-
-    plt.show()
-
-
-def plot_scatterplot(data_, x, y):
-    sns.set_theme(style="white", color_codes=True)
-
-    # Use JointGrid directly to draw a custom plot
-    g = sns.JointGrid(data=data_, x=x, y=y, space=0, ratio=17)
-    g.plot_joint(sns.scatterplot, size=data_[x], sizes=(30, 120),
-                 color="g", alpha=.6, legend=False)
-    g.plot_marginals(sns.rugplot, height=1, color="g", alpha=.6)
-
-def plot_catplot(data_, protocol):
-
-    sns.set_theme(style="whitegrid")
-
-    # Load the example exercise dataset
-    exercise = sns.load_dataset("exercise")
-
-    # Draw a pointplot to show pulse as a function of three categorical factors
-    g = sns.catplot(
-        data=data_, x="time", y="pulse", hue="protocol", col="diet",
-        capsize=.2, palette="YlGnBu_d", errorbar="se",
-        kind="point", height=6, aspect=.75,
-    )
-    g.despine(left=True)
-
-
-def plot_ecdf(data_, metric, title='ECDF', fname=None):
-    sns.set_theme()
-
-    # Sort data for the x axis
-    x = np.sort(data_[metric])
-    # Arange return evenly spaced values within a given interval
-    y = np.arange(1, len(x)+1) / len(x)
-
-    _ = plt.plot(x, y, marker='.', linestyle='none')
-    _ = plt.xlabel(metric)
-    _ = plt.ylabel("ECDF")
-    plt.title(title)
-
-    # Keeps data off plot edges by adding a 2% buffer all around the plot
-    plt.margins(0.02)
-
-    if fname is not None:
-        plt.savefig(fname, bbox_inches='tight')
-
-    plt.show()
-
-
 def plot_stats(stats, num_stations):
     metrics = ['throughput', 'collision_rate', 'delay', 'retransmissions']
     protocols = ['aloha', 'csma']
@@ -139,3 +72,7 @@ def plot_stats(stats, num_stations):
         plt.legend()
         plt.grid(True)
         plt.show()
+
+
+def load_df(stats):
+    return pd.DataFrame(stats)
