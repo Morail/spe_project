@@ -34,6 +34,7 @@ def init_stations(num_, packet_probs, packet_sizes, rng_, max_backoff_time):
     return stations
 
 
+# Print out the overall stats
 def print_tables(data_, log_, save_fig):
 
     res = []
@@ -50,16 +51,21 @@ def print_tables(data_, log_, save_fig):
     log_.info("Overall statistics for the simulation:\n" + tabulate(res, headers=headers_, tablefmt="grid"))
 
     if save_fig:
+
+        # Simplest version
         with open('./data/%s-stats.dat' % (time.strftime("%Y%m%d-%H%M")), 'w') as f:
             f.write(tabulate(res, headers=headers_, tablefmt="grid"))
 
+        # Markdown, github style
         with open('./data/%s-stats.md' % (time.strftime("%Y%m%d-%H%M")), 'w') as f:
             f.write(tabulate(res, headers=headers_, tablefmt="github"))
 
+        # LateX
         with open('./data/%s-stats.latex' % (time.strftime("%Y%m%d-%H%M")), 'w') as f:
-            f.write(markdown(tabulate(res, headers=headers_, tablefmt="latex")))
+            f.write(tabulate(res, headers=headers_, tablefmt="latex"))
 
 
+# Deprecated
 def plot_stats(stats, num_stations):
     metrics = ['throughput', 'collision_rate', 'delay', 'retransmissions']
     protocols = ['aloha', 'csma']
@@ -86,5 +92,6 @@ def plot_stats(stats, num_stations):
         plt.show()
 
 
+# Load stats into a Pandas DataFrame
 def load_df(stats):
     return pd.DataFrame(stats)

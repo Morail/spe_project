@@ -210,10 +210,13 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
     _ = scipy.stats.probplot(x, dist=scipy.stats.geom, sparams=params, plot=ax1, fit=True)
     ax2 = fig.add_subplot(212)
     ax2.set_title('Probplot after Box-Cox transformation')
-    xt, _ = rescale_data(data)
-    _ = scipy.stats.probplot(xt, dist=scipy.stats.norm, plot=ax2, fit=True)
-    ax2.text(0.05, 0.85, "Rescaled Data vs norm", transform=ax2.transAxes, fontsize=14,
-         verticalalignment='top', bbox=props)
+    try:
+        xt, _ = rescale_data(data)
+        _ = scipy.stats.probplot(xt, dist=scipy.stats.norm, plot=ax2, fit=True)
+        ax2.text(0.05, 0.85, "Rescaled Data vs norm", transform=ax2.transAxes, fontsize=14,
+             verticalalignment='top', bbox=props)
+    except ValueError:
+        print('Error: can not plot rescaled data qq-plot')
 
     # _ = sm.qqplot(x, line='45')
     # plot = sm.ProbPlot(x, dist=scipy.stats.geom, distargs=(1/3,))
