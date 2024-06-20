@@ -4,6 +4,8 @@ import numpy as np
 import utils
 import simulations
 import rng
+import stats
+import channel
 
 
 def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
@@ -46,11 +48,25 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
                 channel_time_remaining = transmission_times[node_index]
                 total_data_transmitted += packet_sizes[node_index]
 
-    waiting_time = np.mean(sum([s.waiting_time for s in stations]))
+    # Compute statistics Throughput: Track successful transmissions and their packet sizes. Calculate the total
+    # number of bits transmitted per unit time.
     # TODO: throughput in Mbs
-    throughput = total_data_transmitted / cfg.num_epochs
-    collision_rate = (total_transmissions - successful_transmissions) / total_transmissions
-    return throughput, collision_rate, successful_transmissions, total_transmissions, waiting_time
+    throughput = channel.transmission_size / cfg.num_epochs
+    # Collision Rate: number of collisions during the simulation, divided by the total number of transmission attempts.
+    collision_rate = collisions / total_transmissions
+    # Successful Transmissions: number of packets successfully transmitted and delivered.
+    successful_tx = channel.packets
+    # Packet Delay: track the time a packet is generated until it's successfully received, considering
+    # retransmissions and backoff delays. Average delay across all packets.
+    delay = stats.compute_mean([s.waiting_time for s in stations])
+    # Lost packets: number of packets lost due to maximum backoff excess after a collision and unsuccessful
+    # retransmission. Average delay across all packets.
+    lost_packets = stats.compute_mean([s.lost_packets for s in stations])
+    # Channel Utilization: channel busy time (excluding collisions and backoff periods) and divide it by
+    # the total simulation time. - Carrier Sense Time: Track the time stations spend sensing the channel before
+    # transmitting. Calculate the average carrier sense time across all transmission attempts.
+    
+    return throughput, collision_rate, successful_transmissions, total_transmissions, delay
 
 
 def run_simulations(num_stations, cfg, logger):
@@ -58,8 +74,9 @@ def run_simulations(num_stations, cfg, logger):
 
     throughput = []
     collision_rates = []
-    waiting_times = []
-    utilizations = []
+    delays = []
+    lost_packets = []
+    tx_packets = []
 
     for _ in range(cfg.num_runs):
 
@@ -71,27 +88,30 @@ def run_simulations(num_stations, cfg, logger):
         else:
             rng_ = rng.RandomNumberGenerator(cfg.seed)
 
-        # Only for debug purposes
         if (_ + 1) % 100 == 0:
-            logger.debug("[CSMA]  :: Run number %d" % (_ + 1))
+            logger.debug("[ALOHA] :: Run number %d" % (_ + 1))
 
         # Generate rvs for each station in the simulated model for the three different categories
         # TODO: define upper and lower interval bound using the config file
-        packet_probs = [rng_.generate_random_uniform(0.05, 0.2) for _ in range(num_stations)]
+        packet_probs = [rng_.generate_random_uniform(0.05, 0.4) for _ in range(num_stations)]
         transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
         packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
-        tput, c_rate, _, _, w_time, coll = sim_csma(num_stations, cfg, packet_probs, transmission_times,
-                                              packet_sizes, rng_, logger)
+        tput, c_rate, tx_pack, delay, l_packs = sim_csma(num_stations, cfg, packet_probs,
+                                                          transmission_times,
+                                                          packet_sizes, rng_, logger)
 
+        # Update simulation's sampled data
         throughput.append(tput)
         collision_rates.append(c_rate)
-        waiting_times.append(w_time)
+        delays.append(delay)
+        lost_packets.append(l_packs)
+        tx_packets.append(tx_pack)
 
     return {
         "throughput": throughput
         # ,"collision_rate": collision_rates
-        , "delay": waiting_times
+        , "delay": delays
         , "lost_packets": None
         # ,"tx_packets": None
     }

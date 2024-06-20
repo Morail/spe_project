@@ -3,15 +3,18 @@ import numpy as np
 
 import simulations
 import utils
+import stats
 import rng
 
 
-def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
+def sim_aloha(num_stations, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
     total_transmissions = 0
     collisions = 0
 
+    # Instance of a new channel
     channel = Channel()
-    stations = utils.init_stations(num_nodes, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
+    # Init stations
+    stations = utils.init_stations(num_stations, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
 
     for slot in range(cfg.num_epochs):
 
@@ -25,7 +28,7 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
         # List of nodes waiting for the backoff time to be over
         waiting = [s for s in stations if s.is_waiting()]
 
-        # Keep count of transmission
+        # Keep count of total transmission
         total_transmissions += len(transmitting)
 
         if not transmitting:
@@ -66,23 +69,30 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
         for w in waiting:
             w.decrease_waiting_time()
 
-    # Compute statistics
-    waiting_time = sum([s.waiting_time for s in stations])
+    # Compute statistics Throughput: Track successful transmissions and their packet sizes. Calculate the total
+    # number of bits transmitted per unit time.
     # TODO: throughput in Mbs
     throughput = channel.transmission_size / cfg.num_epochs
+    # Collision Rate: number of collisions during the simulation, divided by the total number of transmission attempts.
     collision_rate = collisions / total_transmissions
-    lost_packets = sum([s.lost_packets for s in stations])
+    # Successful Transmissions: number of packets successfully transmitted and delivered.
+    successful_tx = channel.packets
+    # Packet Delay: track the time a packet is generated until it's successfully received, considering
+    # retransmissions and backoff delays. Average delay across all packets.
+    delay = stats.compute_mean([s.waiting_time for s in stations])
+    # Lost packets: number of packets lost due to maximum backoff exceedence after a collision and unsuccessful
+    # retransmission. Average delay across all packets.
+    lost_packets = stats.compute_mean([s.lost_packets for s in stations])
 
-    return throughput, collision_rate, channel.packets, total_transmissions, waiting_time, lost_packets, collisions
+    return throughput, collision_rate, successful_tx, delay, lost_packets
 
 
 def run_simulations(num_stations, cfg, logger):
     logger.info("[ALOHA] :: Running %d simulations with %d stations" % (cfg.num_runs, num_stations))
 
     throughput = []
-    collisions = []
     collision_rates = []
-    waiting_times = []
+    delays = []
     lost_packets = []
     tx_packets = []
 
@@ -105,27 +115,27 @@ def run_simulations(num_stations, cfg, logger):
         transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
         packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
 
-        tput, c_rate, tx_pack, _, w_time, l_packs, coll = sim_aloha(num_stations, cfg, packet_probs,
-                                                              transmission_times,
-                                                              packet_sizes, rng_, logger)
+        tput, c_rate, tx_pack, delay, l_packs = sim_aloha(num_stations, cfg, packet_probs,
+                                                          transmission_times,
+                                                          packet_sizes, rng_, logger)
+
+        # Update simulation's sampled data
         throughput.append(tput)
-        collisions.append(coll)
         collision_rates.append(c_rate)
-        waiting_times.append(w_time)
+        delays.append(delay)
         lost_packets.append(l_packs)
         tx_packets.append(tx_pack)
 
     return {
         "throughput": throughput
-        ,"collision_rate": collision_rates
-        ,"delay": waiting_times
-        # ,"lost_packets": lost_packets
-        ,"tx_packets": tx_packets
+        , "collision_rate": collision_rates
+        , "delay": delays
+        , "lost_packets": lost_packets
+        , "tx_packets": tx_packets
     }
 
 
 def main():
-
     # Run simulations from the method defined in simulation.py
     simulations.start_simulations(['aloha'])
 
