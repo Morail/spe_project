@@ -348,3 +348,4 @@ fabric.properties
 
 # Custom:
 plots/*
+data/*
