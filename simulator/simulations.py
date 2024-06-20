@@ -13,13 +13,13 @@ def compute_stats(df, log_, protocol, num_stations, obs):
         'protocol': protocol
         , 'num_stations': num_stations
         , 'obs': obs
-        , 'percentiles': " - ".join([str("{:.2f}".format(x)) for x in stats.compute_percentiles(df, np.array([2.5, 25, 75, 97.5]))])
+        , 'percentiles': " - ".join([str("{:.6f}".format(x)) for x in stats.compute_percentiles(df, np.array([2.5, 25, 75, 97.5]))])
         , 'mean': stats.compute_mean(df)
         , 'median': stats.compute_median(df)
         , 'var': stats.compute_variance(df)
         , 'std': stats.compute_std(df)
-        , 'ci': " - ".join(str("{:.2f}".format(x)) for x in stats.compute_confidence_interval(df))
-        , 'CIs median': " - ".join(str("{:.2f}".format(x)) for x in stats.compute_ci_median(df))
+        , 'ci': " - ".join(str("{:.6f}".format(x)) for x in stats.compute_confidence_interval(df))
+        , 'CIs median': " - ".join(str("{:.6f}".format(x)) for x in stats.compute_ci_median(df))
         , 'gini': stats.compute_gini_coefficient(df)
         , 'CoV': stats.compute_coefficient_of_variation(df)
         , 'mad': stats.compute_mad(df)
