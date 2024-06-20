@@ -189,18 +189,25 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
     x = np.array(data)
 
     # MLE to find parameter p for geometric distribution
-    # dist = scipy.stats.geom
-    # res = scipy.stats.fit(dist, data)
+    dist = scipy.stats.geom
+    # Test for geometric distribution
+    # TODO: check for others
+    # TODO: chi-square test
+    res = scipy.stats.fit(dist, data)
     # print(res)
+    # Set ditribution params
+    params = res.params if res.success else (0.02) # 0.02 default value after observation
+
+    res2 = scipy.stats.fit( scipy.stats.norm, data)
 
     fig = plt.figure()
     props = dict(boxstyle='round', alpha=0.5, fill=True, color="blue")
     ax1 = fig.add_subplot(211)
     ax1.set_xlabel('')
-    ax1.set_title('Probplot against normal distribution')
+    ax1.set_title('Probplot against geometric distribution')
     ax1.text(0.05, 0.90, "Data vs geometric", transform=ax1.transAxes, fontsize=14,
          verticalalignment='top', bbox=props)
-    _ = scipy.stats.probplot(x, dist=scipy.stats.geom, sparams=(0.0168), plot=ax1, fit=True)
+    _ = scipy.stats.probplot(x, dist=scipy.stats.geom, sparams=params, plot=ax1, fit=True)
     ax2 = fig.add_subplot(212)
     ax2.set_title('Probplot after Box-Cox transformation')
     xt, _ = rescale_data(data)

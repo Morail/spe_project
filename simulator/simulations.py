@@ -100,7 +100,9 @@ def start_simulations(protocols):
                 # Lorenz Curve
                 title = '%s %s Lorenz Curve for %d stations' % (protocol.upper(), metric, num_stations)
                 fn_ = './plots/%s_%s_%d_lorenz.png' % (protocol, metric, num_stations)
-                # stats.plot_lorenz_curve(data_, title, fname=fn_, save_fig=save_fig)
+                stats.plot_lorenz_curve(data_, title, fname=fn_, save_fig=save_fig)
+
+                # TODO: chi-squared test the observed sample
 
     # Plot results
     # utils.plot_stats(stats_, cfg.list_num_stations)
