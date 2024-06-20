@@ -5,11 +5,15 @@
 ## Description
 The goal of the project is to implement a Discrete Event Simulation for two different Medium Access Protocol, which are 
 respectively **ALOHA** and **CSMA**.
-The DES is written in the Python language (Python version 3.9), requirements such as numpy or matplotlib are listed in 
-the `requirements.txt` file. following the [PIP convention](https://pip.pypa.io/en/stable/reference/requirements-file-format/) 
 
 The simulator is implemented in an object-oriented model. In order to simplify the model, the time is finite and discrete
 such that it evolves with fixed increment. Each increment corresponds to an epoch (see the next paragraph _Configuration_)
+
+### Requirements
+The DES is written in the Python language (Python version 3.9), requirements such as numpy or matplotlib are listed in 
+the `requirements.txt` file. following the [PIP convention](https://pip.pypa.io/en/stable/reference/requirements-file-format/).
+
+To install the required packages run the command `pip install -r requirements.txt`
 
 ## Configuration
 Before running a simulation, it is possible to modify the parameters of the model in order to test how these values
