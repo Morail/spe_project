@@ -68,6 +68,7 @@ def sim_aloha(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rn
 
     # Compute statistics
     waiting_time = sum([s.waiting_time for s in stations])
+    # TODO: throughput in Mbs
     throughput = channel.transmission_size / cfg.num_epochs
     collision_rate = collisions / total_transmissions
     lost_packets = sum([s.lost_packets for s in stations])

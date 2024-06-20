@@ -47,6 +47,7 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
                 total_data_transmitted += packet_sizes[node_index]
 
     waiting_time = np.mean(sum([s.waiting_time for s in stations]))
+    # TODO: throughput in Mbs
     throughput = total_data_transmitted / cfg.num_epochs
     collision_rate = (total_transmissions - successful_transmissions) / total_transmissions
     return throughput, collision_rate, successful_transmissions, total_transmissions, waiting_time
