@@ -49,12 +49,14 @@ def start_simulations(protocols):
         # Iterate over the different number of devices as specified in the simulation's config
         for num_stations in cfg.list_num_stations:
 
+            data_ = None
+
             # Run simulation with the given parameter and the "ns" number of stations
             # The number of station is the only variable in the simulation
-            if protocol == 'aloha':
+            if protocol == 'aloha2':
                 simulations_res[num_stations][protocol] = aloha.run_simulations(num_stations, cfg, log_)
-            # elif protocol == 'csma':
-            #    simulations_res[num_stations][protocol] = csma.run_simulations(num_stations, cfg, log_)
+            elif protocol == 'csma':
+                simulations_res[num_stations][protocol] = csma.run_simulations(num_stations, cfg, log_)
             else:
                 log_.error("Protocol %s not supported" % protocol)
                 continue
@@ -64,8 +66,12 @@ def start_simulations(protocols):
 
             for metric, df in simulations_res[num_stations][protocol].items():
 
+                # print(metric, df)
+
+                # Check if exists any data
                 if df is None:
                     log_.error("Can not compute any statistic for protocol %s and %s metric" % (protocol, metric))
+                    continue
 
                 log_.debug("Processing metric %s" % metric)
 
