@@ -1,22 +1,20 @@
-from channel import Channel
-import numpy as np
-
 import utils
 import simulations
 import rng
 import stats
 import channel
+from station import CsmaStation
 
 
-def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
+def sim_csma(num_stations, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
     successful_transmissions = 0
     total_transmissions = 0
     total_data_transmitted = 0
     channel_time_remaining = 0
     collisions = 0
 
-    c = Channel()
-    stations = utils.init_stations(num_nodes, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
+    c = channel.Channel()
+    stations = [CsmaStation(i, packet_probs[i], packet_sizes[i], rng_, cfg.max_backoff_time) for i in range(num_stations)]
 
     for slot in range(cfg.num_epochs):
 
@@ -51,11 +49,11 @@ def sim_csma(num_nodes, cfg, packet_probs, transmission_times, packet_sizes, rng
     # Compute statistics Throughput: Track successful transmissions and their packet sizes. Calculate the total
     # number of bits transmitted per unit time.
     # TODO: throughput in Mbs
-    throughput = channel.transmission_size / cfg.num_epochs
+    throughput = c.transmission_size / cfg.num_epochs
     # Collision Rate: number of collisions during the simulation, divided by the total number of transmission attempts.
     collision_rate = collisions / total_transmissions
     # Successful Transmissions: number of packets successfully transmitted and delivered.
-    successful_tx = channel.packets
+    successful_tx = c.packets
     # Packet Delay: track the time a packet is generated until it's successfully received, considering
     # retransmissions and backoff delays. Average delay across all packets.
     delay = stats.compute_mean([s.waiting_time for s in stations])

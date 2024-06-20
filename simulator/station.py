@@ -41,6 +41,15 @@ class Station:
         self.sent_packets += 1
         self.set_idle()
 
+    def __repr__(self):
+        return "Node [%s]" % self.id
+
+
+class AlohaStation(Station):
+
+    def __init__(self, id_, packet_prob, packet_size, rng_, max_backoff_time=64):
+        super().__init__(id_, packet_prob, packet_size, rng_, max_backoff_time)
+
     def start_tx(self):
         # Increase the counter holding the total number of packets
         # either delivered or collided
@@ -92,5 +101,9 @@ class Station:
         # A node in the RXT state has to send data
         return self.state == Station.RTX or (self.state == Station.IDLE and self.rng.generate_random() < self.packet_prob)
 
-    def __repr__(self):
-        return "Node [%s]" % self.id
+
+class CsmaStation(Station):
+
+    def __init__(self, id_, packet_prob, packet_size, rng_, max_backoff_time=64):
+        super().__init__(id_, packet_prob, packet_size, rng_, max_backoff_time)
+

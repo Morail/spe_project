@@ -1,8 +1,7 @@
 from channel import Channel
-import numpy as np
+from station import AlohaStation
 
 import simulations
-import utils
 import stats
 import rng
 
@@ -14,7 +13,7 @@ def sim_aloha(num_stations, cfg, packet_probs, transmission_times, packet_sizes,
     # Instance of a new channel
     channel = Channel()
     # Init stations
-    stations = utils.init_stations(num_stations, packet_probs, packet_sizes, rng_, cfg.max_backoff_time)
+    stations = [AlohaStation(i, packet_probs[i], packet_sizes[i], rng_, cfg.max_backoff_time) for i in range(num_stations)]
 
     for slot in range(cfg.num_epochs):
 
