@@ -14,7 +14,7 @@ such that it evolves with fixed increment. Each increment corresponds to an epoc
 ### Code organization
 Developed code is organized in different Python scripts stored under the `simulator` directory. It worth mentioning some of those scripts, in particular:
  - **`simulations.py`** holds the main code used to orchestrate and run the simulations, and to print out the relative outputs;
- - **`aloha.p`**y and **`cmsa.py`** contain the modeling of the two network protocols;
+ - **`aloha.py`** and **`cmsa.py`** contain the modeling of the two network protocols;
  - in **`station.py`** and **`channel.py`** is implemented the object-oriented part of the model ;
  - **`stats.py`** contains methods used to compute statistical analysis and to produce Plots;
  - **`rng.py`** is a class, to be transformed into a singleton in a future development, which goal is to let each simulation share a common Random Number Generator.
