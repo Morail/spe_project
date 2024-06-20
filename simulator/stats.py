@@ -5,7 +5,7 @@ import scipy.stats
 import seaborn as sns
 from matplotlib import pyplot as plt
 from scipy import stats as st
-from statsmodels import api as sm
+import pandas as pd
 
 
 def compute_percentiles(data, percentiles):
@@ -67,8 +67,8 @@ def compute_ci_median(data):
     n = len(data)
     sdata = np.sort(data)
 
-    lower = math.floor((0.50*n) - (0.980*math.sqrt(n)))
-    upper = math.ceil((0.50*n) +1 + (0.980*math.sqrt(n)))
+    lower = math.floor((0.50 * n) - (0.980 * math.sqrt(n)))
+    upper = math.ceil((0.50 * n) + 1 + (0.980 * math.sqrt(n)))
 
     interval = [sdata[lower], sdata[upper]]
     mean = compute_mean(data)
@@ -109,7 +109,7 @@ def compute_lorenz_curve_gap(data):
     m = compute_mean(data)
     mad = compute_mad(data)
 
-    gap = mad / (2*m)
+    gap = mad / (2 * m)
 
     return gap
 
@@ -119,6 +119,7 @@ def rescale_data(data):
     t_data = scipy.stats.boxcox(data)
 
     return t_data
+
 
 def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=False):
     # Throughput histogram
@@ -196,9 +197,7 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
     res = scipy.stats.fit(dist, data)
     # print(res)
     # Set ditribution params
-    params = res.params if res.success else (0.02) # 0.02 default value after observation
-
-    res2 = scipy.stats.fit( scipy.stats.norm, data)
+    params = res.params if res.success else (0.02)  # 0.02 default value after observation
 
     fig = plt.figure()
     props = dict(boxstyle='round', alpha=0.5, fill=True, color="blue")
@@ -206,7 +205,7 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
     ax1.set_xlabel('')
     ax1.set_title('Probplot against geometric distribution')
     ax1.text(0.05, 0.90, "Data vs geometric", transform=ax1.transAxes, fontsize=14,
-         verticalalignment='top', bbox=props)
+             verticalalignment='top', bbox=props)
     _ = scipy.stats.probplot(x, dist=scipy.stats.geom, sparams=params, plot=ax1, fit=True)
     ax2 = fig.add_subplot(212)
     ax2.set_title('Probplot after Box-Cox transformation')
@@ -214,7 +213,7 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
         xt, _ = rescale_data(data)
         _ = scipy.stats.probplot(xt, dist=scipy.stats.norm, plot=ax2, fit=True)
         ax2.text(0.05, 0.85, "Rescaled Data vs norm", transform=ax2.transAxes, fontsize=14,
-             verticalalignment='top', bbox=props)
+                 verticalalignment='top', bbox=props)
     except ValueError:
         print('Error: can not plot rescaled data qq-plot')
 
@@ -222,6 +221,26 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
     # plot = sm.ProbPlot(x, dist=scipy.stats.geom, distargs=(1/3,))
     # plot = sm.ProbPlot(x, dist=scipy.stats.lognorm, fit=True)
     # plot.qqplot(line='45')
+
+    if save_fig:
+        plt.savefig(fname, bbox_inches='tight')
+
+    plt.show()
+
+
+def plot_boxplot(data, title="Boxplot", fname=None, save_fig=False):
+    sns.set()
+
+    df = pd.DataFrame(data, columns=['sampled', 'rescaled'])
+
+    # plt.figure(figsize=(9,9)) #for a bigger image
+    sns.boxplot(x="variable", y="value", data=pd.melt(df), showfliers=False,
+                notch=True, #flierprops={"marker": "x"},
+                boxprops={"facecolor": (.3, .5, .7, .5)},
+                legend="full",
+                medianprops={"color": "r", "linewidth": 2})
+    # df.boxplot(showfliers=False)
+    plt.title(title)
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')

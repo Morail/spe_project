@@ -72,6 +72,12 @@ def start_simulations(protocols):
                 # Rescale data via Box-Cox transformation
                 try:
                     t_data = stats.rescale_data(df)
+
+                    # Create a structure to hold both sampled and rescaled data for a later Boxplot
+                    measures_ = {
+                        'sampled': df,
+                        'rescaled': t_data[0]
+                    }
                 except ValueError:
                     log_.error("Con not rescale data for protocol %s and %s metric" % (protocol, metric))
 
@@ -101,13 +107,16 @@ def start_simulations(protocols):
                 title = '%s %s Lorenz Curve for %d stations' % (protocol.upper(), metric, num_stations)
                 fn_ = './plots/%s_%s_%d_lorenz.png' % (protocol, metric, num_stations)
                 # stats.plot_lorenz_curve(data_, title, fname=fn_, save_fig=save_fig)
-                
-                # TODO: print Box-plot
 
                 # TODO: chi-squared test the observed sample
 
-    # Plot results
-    # utils.plot_stats(stats_, cfg.list_num_stations)
+                if measures_ is not None:
+                    title = '%s %s median value Box-plot for %d stations' % (protocol.upper(), metric, num_stations)
+                    fn_ = './plots/%s_%s_%d_boxplot.png' % (protocol, metric, num_stations)
+                    stats.plot_boxplot(measures_, title=title, fname=fn_, save_fig=save_fig)
+
+    # Load overall statistic results into a Panda DataFrame
+    overall_df = utils.load_df(overall_stats)
 
     # Print overall stats in a table-fashioned way
     utils.print_tables(overall_stats, log_, save_fig)
