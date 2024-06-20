@@ -59,7 +59,7 @@ def compute_confidence_interval(data, confidence=0.95):
     sem = st.sem(data)
     interval = st.t.interval(confidence, len(data) - 1, loc=mean, scale=sem)
 
-    return mean, interval
+    return interval
 
 
 def compute_ci_median(data):
@@ -73,7 +73,7 @@ def compute_ci_median(data):
     interval = [sdata[lower], sdata[upper]]
     mean = compute_mean(data)
 
-    return mean, interval
+    return interval
 
 
 def compute_gini_coefficient(data):

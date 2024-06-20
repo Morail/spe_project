@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tabulate import tabulate
+import time
 
 from station import Station
 
@@ -33,19 +34,30 @@ def init_stations(num_, packet_probs, packet_sizes, rng_, max_backoff_time):
     return stations
 
 
-def print_tables(stats_, metric):
+def print_tables(data_, log_, save_fig):
 
-    data_ = []
-    headers_ = ['protocol', '# stations', 'avg '+metric , 'std '+metric]
+    res = []
+    # Headers to be printed out
+    headers_ = ['protocol', 'num_stations', 'obs', 'mean', 'var', 'std', 'median', 'mad', 'CIs median',
+                'gap', 'gini', 'CoV', 'percentiles']
 
-    for ns, vns in stats_.items():
-        for p, vp in vns.items():
-            value = vp[metric]
-            mean = np.mean(value)
-            std = np.std(value)
-            data_.append([p, ns, mean, std])
+    for d in data_:
+        row = []
+        for h in headers_:
+            row.append(d[h] if h in d else np.nan)
+        res.append(row)
 
-    return tabulate(data_, headers=headers_)
+    log_.info("Overall statistics for the simulation:\n" + tabulate(res, headers=headers_, tablefmt="grid"))
+
+    if save_fig:
+        with open('./data/%s-stats.dat' % (time.strftime("%Y%m%d-%H%M")), 'w') as f:
+            f.write(tabulate(res, headers=headers_, tablefmt="grid"))
+
+        with open('./data/%s-stats.md' % (time.strftime("%Y%m%d-%H%M")), 'w') as f:
+            f.write(tabulate(res, headers=headers_, tablefmt="github"))
+
+        with open('./data/%s-stats.latex' % (time.strftime("%Y%m%d-%H%M")), 'w') as f:
+            f.write(markdown(tabulate(res, headers=headers_, tablefmt="latex")))
 
 
 def plot_stats(stats, num_stations):

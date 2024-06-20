@@ -116,10 +116,10 @@ def run_simulations(num_stations, cfg, logger):
 
     return {
         "throughput": throughput
-        #,"collision_rate": collision_rates
+        ,"collision_rate": collision_rates
         ,"delay": waiting_times
         # ,"lost_packets": lost_packets
-        #,"tx_packets": tx_packets
+        ,"tx_packets": tx_packets
     }
 
 

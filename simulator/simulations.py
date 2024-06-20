@@ -7,31 +7,29 @@ import csma
 import config
 
 
-def print_stats(df, log_, protocol, num_stations, metric):
+def compute_stats(df, log_, protocol, num_stations, obs):
 
-    percentiles = stats.compute_percentiles(df, np.array([2.5, 25, 75, 97.5]))
-    mean = stats.compute_mean(df)
-    median = stats.compute_median(df)
-    variance = stats.compute_variance(df)
-    std = stats.compute_std(df)
-    ci = stats.compute_confidence_interval(df)
-    ci95 = stats.compute_ci_median(df)
-    gini = stats.compute_gini_coefficient(df)
-    cov = stats.compute_coefficient_of_variation(df)
-    mad = stats.compute_mad(df)
-    gap = stats.compute_lorenz_curve_gap(df)
+    s = {
+        'protocol': protocol
+        , 'num_stations': num_stations
+        , 'obs': obs
+        , 'percentiles': " - ".join([str("{:.2f}".format(x)) for x in stats.compute_percentiles(df, np.array([2.5, 25, 75, 97.5]))])
+        , 'mean': stats.compute_mean(df)
+        , 'median': stats.compute_median(df)
+        , 'var': stats.compute_variance(df)
+        , 'std': stats.compute_std(df)
+        , 'ci': " - ".join(str("{:.2f}".format(x)) for x in stats.compute_confidence_interval(df))
+        , 'CIs median': " - ".join(str("{:.2f}".format(x)) for x in stats.compute_ci_median(df))
+        , 'gini': stats.compute_gini_coefficient(df)
+        , 'CoV': stats.compute_coefficient_of_variation(df)
+        , 'mad': stats.compute_mad(df)
+        , 'gap': stats.compute_lorenz_curve_gap(df)
+    }
 
-    log_.info("[%s] - [%d stations] :: %s mean: %s" % (protocol.upper(), num_stations, metric, mean))
-    log_.info("[%s] - [%d stations] :: %s median: %s" % (protocol.upper(), num_stations, metric, median))
-    log_.info("[%s] - [%d stations] :: %s percentiles: %s" % (protocol.upper(), num_stations, metric, percentiles))
-    log_.info("[%s] - [%d stations] :: %s variance: %s" % (protocol.upper(), num_stations, metric, variance))
-    log_.info("[%s] - [%d stations] :: %s std: %s" % (protocol.upper(), num_stations, metric, std))
-    log_.info("[%s] - [%d stations] :: %s ci: %s" % (protocol.upper(), num_stations, metric, ci))
-    log_.info("[%s] - [%d stations] :: %s ci95: %s" % (protocol.upper(), num_stations, metric, ci95))
-    log_.info("[%s] - [%d stations] :: %s gini: %s" % (protocol.upper(), num_stations, metric, gini))
-    log_.info("[%s] - [%d stations] :: %s CoV: %s" % (protocol.upper(), num_stations, metric, cov))
-    log_.info("[%s] - [%d stations] :: %s mad: %s" % (protocol.upper(), num_stations, metric, mad))
-    log_.info("[%s] - [%d stations] :: %s gap: %s" % (protocol.upper(), num_stations, metric, gap))
+    log_.info("[%s] - [%d stations] :: stats %s" % (protocol.upper(), num_stations, s))
+
+    return s
+
 
 def start_simulations(protocols):
 
@@ -43,6 +41,7 @@ def start_simulations(protocols):
 
     # Stats for the different simulations' config
     simulations_res = {ns: {'aloha': {}, 'csma': {}} for ns in cfg.list_num_stations}
+    overall_stats = []
 
     # Iterate over the different protocols
     for protocol in protocols:
@@ -71,11 +70,12 @@ def start_simulations(protocols):
                 log_.debug("Processing metric %s" % metric)
 
                 # Rescale data via Box-Cox transformation
-                t_data = stats.rescale_data(df)
+                try:
+                    t_data = stats.rescale_data(df)
+                except ValueError:
+                    log_.error("Con not rescale data for protocol %s and %s metric" % (protocol, metric))
 
-                print_stats(df, log_, protocol, num_stations, metric)
-
-                # print_stats(t_data, log_, protocol, num_stations, metric)
+                overall_stats.append(compute_stats(df, log_, protocol, num_stations, metric))
 
                 # Plot graphs
                 # Save plots to file system only if log level is not DEBUG
@@ -100,12 +100,15 @@ def start_simulations(protocols):
                 # Lorenz Curve
                 title = '%s %s Lorenz Curve for %d stations' % (protocol.upper(), metric, num_stations)
                 fn_ = './plots/%s_%s_%d_lorenz.png' % (protocol, metric, num_stations)
-                stats.plot_lorenz_curve(data_, title, fname=fn_, save_fig=save_fig)
+                # stats.plot_lorenz_curve(data_, title, fname=fn_, save_fig=save_fig)
 
                 # TODO: chi-squared test the observed sample
 
     # Plot results
     # utils.plot_stats(stats_, cfg.list_num_stations)
+
+    # Print overall stats in a table-fashioned way
+    utils.print_tables(overall_stats, log_, save_fig)
 
 
 def main():
