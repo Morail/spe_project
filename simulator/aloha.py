@@ -6,7 +6,7 @@ import stats
 import rng
 
 
-def sim_aloha(num_stations, cfg, packet_probs, transmission_times, packet_sizes, rng_, logger):
+def sim_aloha(num_stations, cfg, packet_probs, packet_sizes, rng_, logger):
     total_transmissions = 0
     collisions = 0
 
@@ -15,11 +15,12 @@ def sim_aloha(num_stations, cfg, packet_probs, transmission_times, packet_sizes,
     # Init stations
     stations = [AlohaStation(i, packet_probs[i], packet_sizes[i], rng_, cfg.max_backoff_time) for i in range(num_stations)]
 
-    for slot in range(cfg.num_epochs):
+    # Time advances with fixed increments
+    for epoch in range(cfg.num_epochs):
 
         # Only for debug purposes
-        if (slot + 1) % 1000 == 0:
-            logger.debug(("Processing %d slot" % (slot + 1)))
+        if (epoch + 1) % 1000 == 0:
+            logger.debug(("Processing %d epoch" % (epoch + 1)))
 
         # List of stations ready to transmit a frame
         transmitting = [s for s in stations if s.has_frame_to_transmit()]
@@ -30,15 +31,16 @@ def sim_aloha(num_stations, cfg, packet_probs, transmission_times, packet_sizes,
         # Keep count of total transmission
         total_transmissions += len(transmitting)
 
+        # Check if there are nodes ready to transmit
         if not transmitting:
-            # No nodes ready to start a trasmission
+            # No nodes ready to start a transmission
             continue
 
         # Iterate over all the stations in TX=transmit state
         for txs in transmitting:
             txs.start_tx()
             # Start transmission
-            channel.transmit(txs.packet_size)
+            channel.transmit(epoch, txs.packet_size)
 
         # Only one node is trying to transmit on the channel
         if len(transmitting) == 1:
@@ -51,18 +53,18 @@ def sim_aloha(num_stations, cfg, packet_probs, transmission_times, packet_sizes,
         else:
             # Multiple nodes are trying to send over the channel, this lead to a collision
             # Debug purposes
-            logger.debug("Slot %d : collision detected between %d nodes" % (slot + 1, len(transmitting)))
+            logger.debug("Slot %d : collision detected between %d nodes" % (epoch + 1, len(transmitting)))
             logger.debug('Colliding nodes: %s' % ', '.join(str(t) for t in transmitting))
 
             # In case of collision sent packets are lost
             for txs in transmitting:
-                # Sending station has to handle with the collision
-                txs.handle_collision()
                 # Increment the collisions' counter by the number of transmitting nodes
                 collisions += len(transmitting)
+                # Sending station has to handle with the collision
+                txs.handle_collision()
 
         # Decrease waiting time for stations in WAIT state, as a way to
-        # simulate the increase in the time clock 
+        # simulate the time clock advancing
         # Once waiting time is back to 0 the station will be
         # ready to retransmit the package
         for w in waiting:
@@ -110,12 +112,10 @@ def run_simulations(num_stations, cfg, logger):
 
         # Generate rvs for each station in the simulated model for the three different categories
         # TODO: define upper and lower interval bound using the config file
-        packet_probs = [rng_.generate_random_uniform(0.05, 0.4) for _ in range(num_stations)]
-        transmission_times = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
-        packet_sizes = [rng_.generate_random_int(50, 1500) for _ in range(num_stations)]
+        packet_probs = [rng_.generate_random_uniform(0.05, 0.2) for _ in range(num_stations)]
+        packet_sizes = [rng_.generate_random_int(1, 3) for _ in range(num_stations)]
 
         tput, c_rate, tx_pack, delay, l_packs = sim_aloha(num_stations, cfg, packet_probs,
-                                                          transmission_times,
                                                           packet_sizes, rng_, logger)
 
         # Update simulation's sampled data

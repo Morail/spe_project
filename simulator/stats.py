@@ -130,8 +130,8 @@ def plot_histogram(data_, metric, protocol, num_stations, bins=20, save_fig=Fals
     if save_fig:
         fn_ = './plots/%s_%s_%d_histogram.png' % (protocol, metric, num_stations)
         plt.savefig(fn_, bbox_inches='tight')
-
-    plt.show()
+    else:
+        plt.show()
 
 
 def plot_lorenz_curve(data_, title, fname, save_fig=False):
@@ -159,8 +159,8 @@ def plot_lorenz_curve(data_, title, fname, save_fig=False):
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')
-
-    plt.show()
+    else:
+        plt.show()
 
 
 def plot_scatterplot(data_, x, y, save_fig=False):
@@ -224,8 +224,8 @@ def plot_qqplot(data, title, fname=None, save_fig=False):
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')
-
-    plt.show()
+    else:
+        plt.show()
 
 
 def plot_boxplot(data, title="Boxplot", fname=None, save_fig=False):
@@ -244,8 +244,8 @@ def plot_boxplot(data, title="Boxplot", fname=None, save_fig=False):
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')
-
-    plt.show()
+    else:
+        plt.show()
 
 
 def plot_ecdf(data_, metric, title='ECDF', fname=None, save_fig=False):
@@ -263,8 +263,8 @@ def plot_ecdf(data_, metric, title='ECDF', fname=None, save_fig=False):
 
     if save_fig:
         plt.savefig(fname, bbox_inches='tight')
-
-    plt.show()
+    else:
+        plt.show()
 
 
 def ecdf(data):

@@ -41,14 +41,25 @@ class Station:
         self.sent_packets += 1
         self.set_idle()
 
-    def __repr__(self):
-        return "Node [%s]" % self.id
+    def is_waiting(self):
+        return self.state == Station.WAIT
 
+    def decrease_waiting_time(self):
+        # Time passes, decreases the value of the
+        # backoff time
+        self.backoff_time -= 1
 
-class AlohaStation(Station):
+        # if backoff time is exhausted, and thus the chosen frame
+        # for resending the packet has come, the station enters in the
+        # RTX state (ready to re-transmit)
+        if not self.backoff_time:
+            self.state = Station.RTX
 
-    def __init__(self, id_, packet_prob, packet_size, rng_, max_backoff_time=64):
-        super().__init__(id_, packet_prob, packet_size, rng_, max_backoff_time)
+    def has_frame_to_transmit(self):
+        # If a station is IDLE then it has a frame to be transmitted with
+        # probability equals to the one assigned to the node in the init phase
+        # A node in the RXT state has to send data
+        return self.state == Station.RTX or (self.state == Station.IDLE and self.rng.generate_random() < self.packet_prob)
 
     def start_tx(self):
         # Increase the counter holding the total number of packets
@@ -58,6 +69,15 @@ class AlohaStation(Station):
         self.packet_attempt += 1
         # Set state to transmitting
         self.state = Station.TX
+
+    def __repr__(self):
+        return "Node [%s]" % self.id
+
+
+class AlohaStation(Station):
+
+    def __init__(self, id_, packet_prob, packet_size, rng_, max_backoff_time=64):
+        super().__init__(id_, packet_prob, packet_size, rng_, max_backoff_time)
 
     def handle_collision(self):
         self.collision += 1
@@ -81,29 +101,16 @@ class AlohaStation(Station):
         else:
             self.waiting_time += self.backoff_time
 
-    def decrease_waiting_time(self):
-        # Time passes, decreases the value of the
-        # backoff time
-        self.backoff_time -= 1
-
-        # if backoff time is exhausted, and thus the chosen frame
-        # for resending the packet has come, the station enters in the
-        # RTX state (ready to re-transmit)
-        if not self.backoff_time:
-            self.state = Station.RTX
-
-    def is_waiting(self):
-        return self.state == Station.WAIT
-
-    def has_frame_to_transmit(self):
-        # If a station is IDLE then it has a frame to be transmitted with
-        # probability equals to the one assigned to the node in the init phase
-        # A node in the RXT state has to send data
-        return self.state == Station.RTX or (self.state == Station.IDLE and self.rng.generate_random() < self.packet_prob)
-
 
 class CsmaStation(Station):
 
     def __init__(self, id_, packet_prob, packet_size, rng_, max_backoff_time=64):
         super().__init__(id_, packet_prob, packet_size, rng_, max_backoff_time)
+
+    def wait(self):
+        self.state = Station.WAIT
+        # Set backoff time, which in the CSMA/CA case is the random time the station waits
+        # before sensing the channel once again
+        self.backoff_time = self.rng.generate_random_int(1, self.max_backoff_time)
+        self.waiting_time += self.backoff_time
 

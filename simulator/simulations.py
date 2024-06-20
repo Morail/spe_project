@@ -53,7 +53,7 @@ def start_simulations(protocols):
 
             # Run simulation with the given parameter and the "ns" number of stations
             # The number of station is the only variable in the simulation
-            if protocol == 'aloha2':
+            if protocol == 'aloha':
                 simulations_res[num_stations][protocol] = aloha.run_simulations(num_stations, cfg, log_)
             elif protocol == 'csma':
                 simulations_res[num_stations][protocol] = csma.run_simulations(num_stations, cfg, log_)
