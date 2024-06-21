@@ -7,8 +7,8 @@ The goal of the project is to implement a Discrete Event Simulation for two diff
 respectively **ALOHA** and **CSMA**.
 
 
-## Impplementation
-The simulator is implemented in an object-oriented model. In order to simplify the model, the time is finite and discrete
+## Implementation
+The simulator is implemented adopting an object-oriented approach. In order to simplify the model, the time is finite and discrete
 such that it evolves with fixed increment. Each increment corresponds to an epoch (see the next paragraph _Configuration_)
 
 ### Code organization
